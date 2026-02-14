@@ -55,4 +55,5 @@ urlpatterns = [
     ),
     path("panel/utilisateurs/", views.admin_users, name="admin_users"),
     path("panel/activite/", views.admin_activity, name="admin_activity"),
+    path("panel/rendez-vous/", views.admin_appointments, name="admin_appointments"),
 ]

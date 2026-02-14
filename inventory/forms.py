@@ -10,6 +10,11 @@ class InscriptionForm(UserCreationForm):
         model = User
         fields = ["username"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control rounded-3 py-3")
+
 
 class AppointmentForm(forms.ModelForm):
     class Meta:

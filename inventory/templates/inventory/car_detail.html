@@ -1,405 +1,155 @@
 {% extends "inventory/base.html" %}
 {% load humanize %}
-{% load static %}
-
-{% block extra_css %}
-<style>
-    :root {
-        --primary-color: #007aff;
-        --primary-dark: #0056d6;
-        --dark-bg: #1a1a2e;
-        --text-main: #2c3e50;
-        --text-muted: #6c757d;
-        --card-bg: #ffffff;
-        --radius-lg: 24px;
-        --radius-md: 16px;
-        --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.04);
-        --shadow-hover: 0 15px 45px rgba(0, 122, 255, 0.12);
-    }
-
-    /* --- GLOBAL & TYPOGRAPHY --- */
-    body {
-        background-color: #f8f9fa;
-        color: var(--text-main);
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-        letter-spacing: -0.02em;
-    }
-
-    /* --- HERO SECTION --- */
-    .hero-wrapper {
-        position: relative;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        background: #000;
-        margin-bottom: 2rem;
-        box-shadow: var(--shadow-soft);
-    }
-
-    .detail-hero {
-        position: relative;
-        height: 500px;
-        background-color: var(--dark-bg);
-    }
-
-    .detail-hero img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0.95;
-        transition: transform 0.6s ease;
-    }
-
-    .hero-wrapper:hover .detail-hero img {
-        transform: scale(1.02);
-    }
-
-    /* Hero Fallback (No Image) */
-    .hero-fallback {
-        height: 350px;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: rgba(255, 255, 255, 0.3);
-    }
-
-    .hero-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 60px 40px 30px;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
-        color: #fff;
-        z-index: 2;
-    }
-
-    /* --- BADGES ET TAGS --- */
-    .status-badge {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 10;
-        padding: 8px 16px;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    
-    .status-disponible { background: rgba(40, 167, 69, 0.9); color: white; }
-    .status-vendu { background: rgba(220, 53, 69, 0.9); color: white; }
-    .status-attente { background: rgba(255, 193, 7, 0.9); color: #000; }
-
-    /* --- SIDEBAR STICKY (Nouveau) --- */
-    .sticky-sidebar {
-        position: sticky;
-        top: 2rem; /* Reste accroché en haut lors du scroll */
-        z-index: 90;
-    }
-
-    /* --- CARTE PRIX --- */
-    .price-card {
-        background: white;
-        border-radius: var(--radius-md);
-        padding: 24px;
-        border: 1px solid rgba(0, 122, 255, 0.1);
-        box-shadow: var(--shadow-soft);
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .price-main {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: var(--primary-color);
-        line-height: 1;
-        margin-bottom: 5px;
-    }
-
-    .price-label {
-        font-size: 0.9rem;
-        color: var(--text-muted);
-        font-weight: 500;
-    }
-
-    /* --- GRILLE SPECS --- */
-    .specs-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 16px;
-        margin-bottom: 2rem;
-    }
-
-    .spec-item {
-        background: #fff;
-        border-radius: 12px;
-        padding: 16px;
-        border: 1px solid #f0f0f0;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .spec-item:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 5px 15px rgba(0, 122, 255, 0.08);
-        transform: translateY(-2px);
-    }
-
-    .spec-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: #f0f7ff;
-        color: var(--primary-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        margin-bottom: 12px;
-    }
-
-    .spec-label {
-        font-size: 0.75rem;
-        color: #888;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-
-    .spec-value {
-        font-weight: 700;
-        font-size: 1rem;
-        color: var(--text-main);
-    }
-
-    /* --- BOUTONS D'ACTION --- */
-    .btn-action {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 14px;
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        margin-bottom: 10px;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-whatsapp {
-        background: #25D366;
-        color: white;
-        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
-    }
-    .btn-whatsapp:hover { background: #1fb855; color: white; transform: translateY(-2px); }
-
-    .btn-rdv {
-        background: var(--primary-color);
-        color: white;
-        box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
-    }
-    .btn-rdv:hover { background: var(--primary-dark); color: white; transform: translateY(-2px); }
-
-    .btn-share {
-        background: #f1f3f5;
-        color: var(--text-main);
-    }
-    .btn-share:hover { background: #e9ecef; }
-
-    /* --- DESCRIPTION --- */
-    .content-box {
-        background: white;
-        border-radius: var(--radius-md);
-        padding: 30px;
-        border: 1px solid #f0f0f0;
-        margin-bottom: 2rem;
-    }
-    .content-box h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.2rem; }
-    .content-box p { line-height: 1.8; color: #555; }
-
-    /* --- LOCKED SECTION --- */
-    .locked-card {
-        background: #fff;
-        border: 2px dashed #e0e0e0;
-        border-radius: var(--radius-md);
-        padding: 30px 20px;
-        text-align: center;
-        background: linear-gradient(to bottom, #fff, #fdfdfd);
-    }
-    .locked-card i.lock-icon {
-        font-size: 2rem;
-        color: #ffc107;
-        background: #fff8e1;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 15px;
-    }
-
-    /* --- SIMILAR CARS --- */
-    .sim-card {
-        display: block;
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        text-decoration: none;
-        color: inherit;
-        border: 1px solid #eee;
-        transition: all 0.3s ease;
-        height: 100%;
-    }
-    .sim-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-hover);
-    }
-    .sim-img-wrap {
-        height: 180px;
-        overflow: hidden;
-        position: relative;
-    }
-    .sim-img-wrap img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .sim-body { padding: 15px; }
-    .sim-price { color: var(--primary-color); font-weight: 700; font-size: 1.1rem; }
-
-    /* --- NAV BACK --- */
-    .nav-back {
-        display: inline-flex;
-        align-items: center;
-        color: var(--text-muted);
-        text-decoration: none;
-        font-weight: 500;
-        margin-bottom: 1rem;
-        transition: color 0.2s;
-    }
-    .nav-back:hover { color: var(--primary-color); }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        .detail-hero { height: 300px; }
-        .hero-overlay { padding: 30px 20px; }
-        .hero-overlay h1 { font-size: 1.8rem; }
-        .price-main { font-size: 1.8rem; }
-        .sticky-sidebar { position: static; }
-    }
-</style>
-{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    
-    <a href="javascript:history.back()" class="nav-back">
+
+    <a href="javascript:history.back()"
+        class="text-decoration-none text-muted fw-semibold d-inline-flex align-items-center mb-3">
         <i class="bi bi-arrow-left me-2"></i> Retour aux résultats
     </a>
 
     <div class="row g-4">
-        
+
+        <!-- LEFT COLUMN -->
         <div class="col-lg-8">
-            
-            <div class="hero-wrapper">
-                <span class="status-badge 
-                    {% if car.status == 'Disponible' %}status-disponible
-                    {% elif car.status == 'Vendu' %}status-vendu
-                    {% else %}status-attente{% endif %}">
-                    {{ car.status }}
-                </span>
+
+            <!-- HERO IMAGE -->
+            <div class="rounded-4 overflow-hidden mb-4 position-relative shadow-sm" style="background:#111;">
+                {% if car.status == 'Disponible' %}
+                <span class="position-absolute top-0 start-0 m-3 badge rounded-pill bg-success fs-6 px-3 py-2"
+                    style="z-index:10;">{{ car.status }}</span>
+                {% elif car.status == 'Vendu' %}
+                <span class="position-absolute top-0 start-0 m-3 badge rounded-pill bg-danger fs-6 px-3 py-2"
+                    style="z-index:10;">{{ car.status }}</span>
+                {% else %}
+                <span class="position-absolute top-0 start-0 m-3 badge rounded-pill bg-warning text-dark fs-6 px-3 py-2"
+                    style="z-index:10;">{{ car.status }}</span>
+                {% endif %}
 
                 {% if car.image %}
-                <div class="detail-hero">
-                    <img src="{{ car.image.url }}" alt="{{ car.brand }} {{ car.model }}" loading="lazy">
-                    <div class="hero-overlay">
-                        <p class="mb-1 opacity-75 fw-bold text-uppercase small ls-1">{{ car.year }} · Réf. #AUT-{{ car.id|stringformat:"04d" }}</p>
-                        <h1 class="display-5 fw-bold mb-0">{{ car.brand }} {{ car.model }}</h1>
+                <div class="position-relative" style="height:450px;">
+                    <img src="{{ car.image.url }}" alt="{{ car.brand }} {{ car.model }}" class="w-100 h-100"
+                        style="object-fit:cover;" loading="lazy">
+                    <div class="position-absolute bottom-0 start-0 end-0 p-4 text-white"
+                        style="background:linear-gradient(transparent,rgba(0,0,0,.85));">
+                        <p class="mb-1 opacity-75 fw-bold text-uppercase small">{{ car.year }} · Réf. #AUT-{{
+                            car.id|stringformat:"04d" }}</p>
+                        <h1 class="display-6 fw-bold mb-0">{{ car.brand }} {{ car.model }}</h1>
                     </div>
                 </div>
                 {% else %}
-                <div class="hero-fallback">
+                <div class="d-flex flex-column align-items-center justify-content-center text-white-50"
+                    style="height:350px;background:linear-gradient(135deg,#1a1a2e,#0f3460);">
                     <i class="bi bi-car-front display-1 mb-3"></i>
                     <h2 class="h3 fw-bold">{{ car.brand }} {{ car.model }}</h2>
-                    <span class="text-white-50">Image non disponible</span>
+                    <span>Image non disponible</span>
                 </div>
                 {% endif %}
             </div>
 
+            <!-- SPECS GRID -->
             <h5 class="fw-bold mb-3 ms-1">Caractéristiques principales</h5>
-            <div class="specs-container">
-                <div class="spec-item">
-                    <div class="spec-icon"><i class="bi bi-calendar4-week"></i></div>
-                    <span class="spec-label">Année</span>
-                    <span class="spec-value">{{ car.year }}</span>
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-4">
+                    <div class="bg-white rounded-4 border p-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 mb-2"
+                            style="width:38px;height:38px;background:#f0f7ff;">
+                            <i class="bi bi-calendar4-week text-primary"></i>
+                        </div>
+                        <div class="text-muted small fw-bold text-uppercase">Année</div>
+                        <div class="fw-bold">{{ car.year }}</div>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <div class="spec-icon"><i class="bi bi-speedometer2"></i></div>
-                    <span class="spec-label">Kilométrage</span>
-                    <span class="spec-value">{{ car.kilometrage|intcomma }} km</span>
+                <div class="col-6 col-md-4">
+                    <div class="bg-white rounded-4 border p-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 mb-2"
+                            style="width:38px;height:38px;background:#f0f7ff;">
+                            <i class="bi bi-speedometer2 text-primary"></i>
+                        </div>
+                        <div class="text-muted small fw-bold text-uppercase">Kilométrage</div>
+                        <div class="fw-bold">{{ car.kilometrage|intcomma }} km</div>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <div class="spec-icon"><i class="bi bi-fuel-pump"></i></div>
-                    <span class="spec-label">Carburant</span>
-                    <span class="spec-value">{{ car.fuel }}</span>
+                <div class="col-6 col-md-4">
+                    <div class="bg-white rounded-4 border p-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 mb-2"
+                            style="width:38px;height:38px;background:#f0f7ff;">
+                            <i class="bi bi-fuel-pump text-primary"></i>
+                        </div>
+                        <div class="text-muted small fw-bold text-uppercase">Carburant</div>
+                        <div class="fw-bold">{{ car.fuel }}</div>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <div class="spec-icon"><i class="bi bi-diagram-3"></i></div>
-                    <span class="spec-label">Boîte</span>
-                    <span class="spec-value">{{ car.transmission }}</span>
+                <div class="col-6 col-md-4">
+                    <div class="bg-white rounded-4 border p-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 mb-2"
+                            style="width:38px;height:38px;background:#f0f7ff;">
+                            <i class="bi bi-diagram-3 text-primary"></i>
+                        </div>
+                        <div class="text-muted small fw-bold text-uppercase">Boîte</div>
+                        <div class="fw-bold">{{ car.transmission }}</div>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <div class="spec-icon"><i class="bi bi-geo-alt"></i></div>
-                    <span class="spec-label">Localisation</span>
-                    <span class="spec-value">{{ car.city }}</span>
+                <div class="col-6 col-md-4">
+                    <div class="bg-white rounded-4 border p-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 mb-2"
+                            style="width:38px;height:38px;background:#f0f7ff;">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                        </div>
+                        <div class="text-muted small fw-bold text-uppercase">Localisation</div>
+                        <div class="fw-bold">{{ car.city }}</div>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <div class="spec-icon"><i class="bi bi-palette"></i></div>
-                    <span class="spec-label">Couleur</span>
-                    <span class="spec-value">{{ car.color|default:"-" }}</span>
+                <div class="col-6 col-md-4">
+                    <div class="bg-white rounded-4 border p-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 mb-2"
+                            style="width:38px;height:38px;background:#f0f7ff;">
+                            <i class="bi bi-clock text-primary"></i>
+                        </div>
+                        <div class="text-muted small fw-bold text-uppercase">Ajouté le</div>
+                        <div class="fw-bold">{{ car.created_at|date:"d/m/Y" }}</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="content-box">
-                <h3><i class="bi bi-text-paragraph text-primary me-2"></i>Informations détaillées</h3>
-                <p>
-                    {{ car.description|default:"Le vendeur n'a pas fourni de description détaillée pour ce véhicule. N'hésitez pas à le contacter pour plus d'informations."|linebreaks }}
+            <!-- DESCRIPTION -->
+            <div class="bg-white rounded-4 border p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-text-paragraph text-primary me-2"></i>Informations détaillées
+                </h5>
+                <p class="text-muted" style="line-height:1.8;">
+                    {{ car.description|default:"Le vendeur n'a pas fourni de description détaillée pour ce véhicule.
+                    N'hésitez pas à le contacter pour plus d'informations."|linebreaks }}
                 </p>
             </div>
 
+            <!-- SIMILAR CARS -->
             {% if similar_cars %}
-            <div class="mt-5">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h4 class="fw-bold mb-0">Ces modèles pourraient vous plaire</h4>
-                </div>
+            <div class="mt-4">
+                <h5 class="fw-bold mb-3">Ces modèles pourraient vous plaire</h5>
                 <div class="row g-3">
                     {% for scar in similar_cars %}
                     <div class="col-md-4 col-6">
-                        <a href="{% url 'car_detail' scar.id %}" class="sim-card">
-                            <div class="sim-img-wrap">
-                                {% if scar.image %}
-                                <img src="{{ scar.image.url }}" alt="{{ scar.brand }}">
-                                {% else %}
-                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light text-muted">
-                                    <i class="bi bi-image"></i>
+                        <a href="{% url 'car_detail' scar.id %}" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100"
+                                style="transition:transform .3s;" onmouseover="this.style.transform='translateY(-4px)'"
+                                onmouseout="this.style.transform=''">
+                                <div class="overflow-hidden" style="height:160px;">
+                                    {% if scar.image %}
+                                    <img src="{{ scar.image.url }}" alt="{{ scar.brand }}" class="w-100 h-100"
+                                        style="object-fit:cover;">
+                                    {% else %}
+                                    <div
+                                        class="w-100 h-100 bg-light d-flex align-items-center justify-content-center text-muted">
+                                        <i class="bi bi-image fs-1"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
-                            </div>
-                            <div class="sim-body">
-                                <h6 class="fw-bold text-dark text-truncate">{{ scar.brand }} {{ scar.model }}</h6>
-                                <div class="sim-price">{{ scar.price|intcomma }} FCFA</div>
+                                <div class="card-body p-3">
+                                    <h6 class="fw-bold text-dark text-truncate mb-1">{{ scar.brand }} {{ scar.model }}
+                                    </h6>
+                                    <div class="text-primary fw-bold">{{ scar.price|intcomma }} FCFA</div>
+                                </div>
                             </div>
                         </a>
                     </div>
@@ -410,40 +160,47 @@
 
         </div>
 
+        <!-- RIGHT COLUMN (SIDEBAR) -->
         <div class="col-lg-4">
-            <div class="sticky-sidebar">
-                
-                <div class="price-card">
-                    <div class="price-label mb-1">Prix de vente</div>
-                    <div class="price-main">{{ car.price|intcomma }} <small style="font-size:1rem; color:#999">FCFA</small></div>
+            <div style="position:sticky;top:2rem;">
+
+                <!-- PRICE CARD -->
+                <div class="bg-white rounded-4 border shadow-sm p-4 mb-4 text-center">
+                    <div class="text-muted fw-semibold mb-1">Prix de vente</div>
+                    <div class="fw-bold text-primary" style="font-size:2rem;">{{ car.price|intcomma }} <small
+                            class="text-muted" style="font-size:1rem;">FCFA</small></div>
                     <hr class="my-3 opacity-10">
-                    
+
                     {% if user.is_authenticated %}
-                        <a href="https://wa.me/237651197514?text=Bonjour,%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20{{ car.brand }}%20{{ car.model }}..." target="_blank" class="btn-action btn-whatsapp">
-                            <i class="bi bi-whatsapp me-2"></i> Discuter sur WhatsApp
-                        </a>
-                        <a href="{% url 'appointment_create' car.id %}" class="btn-action btn-rdv">
-                            <i class="bi bi-calendar-check me-2"></i> Prendre RDV
-                        </a>
-                        <button class="btn-action btn-share" onclick="copyLink()">
-                            <i class="bi bi-share me-2"></i> Partager
-                        </button>
+                    <a href="https://wa.me/237651197514?text=Bonjour,%20je%20suis%20int%C3%A9ress%C3%A9%20par%20la%20{{ car.brand }}%20{{ car.model }}..."
+                        target="_blank" class="btn btn-success w-100 rounded-3 py-3 fw-semibold mb-2">
+                        <i class="bi bi-whatsapp me-2"></i> Discuter sur WhatsApp
+                    </a>
+                    <a href="{% url 'appointment_create' car.id %}"
+                        class="btn btn-primary w-100 rounded-3 py-3 fw-semibold mb-2">
+                        <i class="bi bi-calendar-check me-2"></i> Prendre RDV
+                    </a>
+                    <button class="btn btn-light w-100 rounded-3 py-3 fw-semibold" onclick="copyLink()">
+                        <i class="bi bi-share me-2"></i> Partager
+                    </button>
                     {% else %}
-                        <div class="d-grid gap-2">
-                            <button class="btn-action btn-share" disabled style="opacity:0.6; cursor:not-allowed">
-                                <i class="bi bi-lock me-2"></i> Contacter le vendeur
-                            </button>
-                        </div>
+                    <button class="btn btn-light w-100 rounded-3 py-3 fw-semibold" disabled
+                        style="opacity:.6;cursor:not-allowed;">
+                        <i class="bi bi-lock me-2"></i> Contacter le vendeur
+                    </button>
                     {% endif %}
                 </div>
 
+                <!-- MESSAGE FORM -->
                 {% if user.is_authenticated %}
-                <div class="bg-white p-4 rounded-4 border border-light shadow-sm">
+                <div class="bg-white rounded-4 border shadow-sm p-4 mb-4">
                     <h6 class="fw-bold mb-3"><i class="bi bi-envelope me-2 text-primary"></i>Message rapide</h6>
                     <form method="POST" action="{% url 'send_message' car.id %}">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <textarea name="content" class="form-control bg-light border-0" rows="3" placeholder="Bonjour, ce véhicule est-il toujours disponible ?" style="resize:none" required></textarea>
+                            <textarea name="content" class="form-control bg-light border-0 rounded-3" rows="3"
+                                placeholder="Bonjour, ce véhicule est-il toujours disponible ?" style="resize:none;"
+                                required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">
                             Envoyer <i class="bi bi-send-fill ms-1"></i>
@@ -451,36 +208,35 @@
                     </form>
                 </div>
                 {% else %}
-                <div class="locked-card">
-                    <i class="bi bi-shield-lock lock-icon"></i>
+                <div class="bg-white rounded-4 p-4 text-center" style="border:2px dashed #e0e0e0;">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                        style="width:60px;height:60px;background:#fff8e1;">
+                        <i class="bi bi-shield-lock text-warning fs-4"></i>
+                    </div>
                     <h5 class="fw-bold">Espace Membre</h5>
-                    <p class="small text-muted mb-3">
-                        Pour éviter les spams et garantir la sécurité, les coordonnées du vendeur sont réservées aux membres.
-                    </p>
-                    <a href="{% url 'login' %}" class="btn btn-outline-primary w-100 rounded-pill mb-2 fw-bold">Se connecter</a>
-                    <a href="{% url 'register' %}" class="small text-decoration-none fw-bold text-primary">Créer un compte gratuit</a>
+                    <p class="small text-muted mb-3">Pour contacter le vendeur, connectez-vous ou créez un compte.</p>
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary w-100 rounded-pill mb-2 fw-bold">Se
+                        connecter</a>
+                    <a href="{% url 'register' %}" class="small text-decoration-none fw-bold text-primary">Créer un
+                        compte gratuit</a>
                 </div>
                 {% endif %}
 
             </div>
         </div>
+
     </div>
 </div>
 
 <script>
     function copyLink() {
         navigator.clipboard.writeText(window.location.href).then(() => {
-            const btn = document.querySelector('.btn-share');
-            const originalText = btn.innerHTML;
-            
+            const btn = document.querySelector('.btn-light[onclick]');
+            const orig = btn.innerHTML;
             btn.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i> Lien copié !';
-            btn.style.background = '#d1e7dd';
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.style.background = '';
-            }, 2500);
-        }).catch(err => console.error("Erreur copie", err));
+            btn.classList.add('bg-success-subtle');
+            setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('bg-success-subtle'); }, 2500);
+        });
     }
 </script>
 {% endblock %}

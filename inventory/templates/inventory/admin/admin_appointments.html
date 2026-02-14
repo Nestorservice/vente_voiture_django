@@ -1,0 +1,246 @@
+{% extends "inventory/admin/base_admin.html" %}
+{% load humanize %}
+
+{% block page_title %}Rendez-vous{% endblock %}
+{% block title %}Rendez-vous{% endblock %}
+
+{% block content %}
+<!-- STATS -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_rdv }}</div>
+                    <div class="stat-label">Total RDV</div>
+                </div>
+                <div class="stat-icon" style="background:#e0f7fa; color:#00838f;">
+                    <i class="bi bi-calendar-check-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ upcoming_rdv }}</div>
+                    <div class="stat-label">À venir</div>
+                </div>
+                <div class="stat-icon" style="background:#e8f5e9; color:#2e7d32;">
+                    <i class="bi bi-clock-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ past_rdv }}</div>
+                    <div class="stat-label">Passés</div>
+                </div>
+                <div class="stat-icon" style="background:#fce4ec; color:#c62828;">
+                    <i class="bi bi-calendar-x-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ this_week }}</div>
+                    <div class="stat-label">Cette semaine</div>
+                </div>
+                <div class="stat-icon" style="background:#fff3e0; color:#e65100;">
+                    <i class="bi bi-lightning-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SEARCH + FILTER -->
+<div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+    <form method="GET" class="admin-search flex-fill" style="min-width:220px;">
+        <i class="bi bi-search text-muted"></i>
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher par nom, téléphone, email, véhicule...">
+        {% if status_filter %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        {% endif %}
+    </form>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'admin_appointments' %}"
+            class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3"
+            style="font-size:0.8rem; font-weight:600;">
+            Tous
+        </a>
+        <a href="{% url 'admin_appointments' %}?status=upcoming{% if q %}&q={{ q }}{% endif %}"
+            class="btn btn-sm {% if status_filter == 'upcoming' %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill px-3"
+            style="font-size:0.8rem; font-weight:600;">
+            <i class="bi bi-clock me-1"></i>À venir
+        </a>
+        <a href="{% url 'admin_appointments' %}?status=past{% if q %}&q={{ q }}{% endif %}"
+            class="btn btn-sm {% if status_filter == 'past' %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3"
+            style="font-size:0.8rem; font-weight:600;">
+            <i class="bi bi-calendar-x me-1"></i>Passés
+        </a>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Véhicule</th>
+                    <th>Date & Heure du RDV</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Message</th>
+                    <th>Statut</th>
+                    <th>Demandé le</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rdv in appointments %}
+                <tr>
+                    <td>
+                        <span style="font-weight:700; color:var(--primary);">#{{ rdv.id }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#e3f2fd,#bbdefb); display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-person-fill" style="color:#1976d2;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.85rem;">{{ rdv.user.username }}</div>
+                                <div style="font-size:0.72rem; color:var(--text-muted);">{{ rdv.user.email|default:"—" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if rdv.car %}
+                        <div class="d-flex align-items-center gap-2">
+                            {% if rdv.car.image %}
+                            <img src="{{ rdv.car.image.url }}" alt=""
+                                style="width:40px; height:40px; border-radius:10px; object-fit:cover;">
+                            {% else %}
+                            <div
+                                style="width:40px; height:40px; border-radius:10px; background:#f0f2f5; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-car-front text-muted"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight:600; font-size:0.85rem;">{{ rdv.car.brand }} {{ rdv.car.model }}
+                                </div>
+                                <div style="font-size:0.72rem; color:var(--text-muted);">{{ rdv.car.year }} · {{ rdv.car.price|intcomma }} FCFA</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">Véhicule supprimé</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-weight:600; font-size:0.88rem;">
+                            <i class="bi bi-calendar3 me-1" style="color:var(--primary);"></i>{{ rdv.date_rdv|date:"d/m/Y" }}
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">
+                            <i class="bi bi-clock me-1"></i>{{ rdv.date_rdv|date:"H:i" }}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="tel:{{ rdv.phone }}" class="text-decoration-none"
+                            style="font-weight:500; font-size:0.85rem;">
+                            <i class="bi bi-telephone me-1" style="color:#2e7d32;"></i>{{ rdv.phone }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="mailto:{{ rdv.email }}" class="text-decoration-none"
+                            style="font-weight:500; font-size:0.85rem;">
+                            <i class="bi bi-envelope me-1" style="color:#1976d2;"></i>{{ rdv.email }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if rdv.message %}
+                        <span style="font-size:0.8rem; color:var(--text-main);" title="{{ rdv.message }}">{{ rdv.message|truncatewords:8 }}</span>
+                        {% else %}
+                        <span class="text-muted" style="font-size:0.8rem;">Aucun message</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% now "Y-m-d H:i" as now_str %}
+                        {% if rdv.date_rdv > rdv.created_at %}
+                        <span class="badge-status badge-disponible">
+                            <i class="bi bi-check-circle me-1"></i>À venir
+                        </span>
+                        {% else %}
+                        <span class="badge-status badge-vendu">
+                            <i class="bi bi-x-circle me-1"></i>Passé
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">
+                            {{ rdv.created_at|date:"d/m/Y" }}
+                        </div>
+                        <div style="font-size:0.7rem; color:#bbb;">
+                            {{ rdv.created_at|timesince }} ago
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <div style="color:var(--text-muted);">
+                            <i class="bi bi-calendar-x display-4 d-block mb-3" style="opacity:0.3;"></i>
+                            <h6 class="fw-bold">Aucun rendez-vous trouvé</h6>
+                            <p class="small">Les demandes de rendez-vous des clients apparaîtront ici.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PAGINATION -->
+{% if page_obj.has_other_pages %}
+<nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination admin-pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+            <a class="page-link"
+                href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

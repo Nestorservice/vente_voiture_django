@@ -4,28 +4,29 @@ from .models import SiteVisit
 
 
 class SiteVisitMiddleware:
-    """Log each page visit for activity tracking — throttled to 1 per IP per minute."""
+    """Log each page visit — throttled to 1 per IP per 5 minutes for performance."""
 
-    EXCLUDED_PATHS = ["/static/", "/media/", "/favicon.ico"]
+    EXCLUDED_PATHS = ["/static/", "/media/", "/favicon.ico", "/admin/"]
 
     def __init__(self, get_response):
         self.get_response = get_response
-        self._recent_ips = {}  # Simple in-memory throttle
+        self._recent_ips = {}
 
     def __call__(self, request):
         response = self.get_response(request)
 
-        # Skip static/media/ajax requests
         path = request.path
         if any(path.startswith(p) for p in self.EXCLUDED_PATHS):
             return response
 
-        # Skip non-200 responses
         if response.status_code != 200:
             return response
 
+        # Skip AJAX requests
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return response
+
         try:
-            # Get client IP
             x_forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
             ip = (
                 x_forwarded.split(",")[0].strip()
@@ -33,18 +34,19 @@ class SiteVisitMiddleware:
                 else request.META.get("REMOTE_ADDR")
             )
 
-            # Throttle: skip if this IP was logged in the last 60 seconds
             now = timezone.now()
             cache_key = f"{ip}:{path}"
             last_visit = self._recent_ips.get(cache_key)
-            if last_visit and (now - last_visit) < timedelta(seconds=60):
+
+            # Throttle to 1 visit per IP+path every 5 minutes
+            if last_visit and (now - last_visit) < timedelta(seconds=300):
                 return response
 
             self._recent_ips[cache_key] = now
 
-            # Clean old entries every 100 requests to prevent memory growth
-            if len(self._recent_ips) > 500:
-                cutoff = now - timedelta(seconds=120)
+            # Cleanup old entries less frequently
+            if len(self._recent_ips) > 300:
+                cutoff = now - timedelta(seconds=600)
                 self._recent_ips = {
                     k: v for k, v in self._recent_ips.items() if v > cutoff
                 }
@@ -56,6 +58,6 @@ class SiteVisitMiddleware:
                 user_agent=request.META.get("HTTP_USER_AGENT", "")[:500],
             )
         except Exception:
-            pass  # Never break the site for analytics
+            pass
 
         return response

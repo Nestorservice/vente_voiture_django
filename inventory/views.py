@@ -707,3 +707,54 @@ def admin_activity(request):
             "unique_ips_today": unique_ips_today,
         },
     )
+
+
+@staff_member_required
+def admin_appointments(request):
+    """Admin view for all appointments with details."""
+    now = timezone.now()
+    appointments = Appointment.objects.select_related("user", "car").order_by(
+        "-created_at"
+    )
+
+    q = request.GET.get("q", "")
+    if q:
+        appointments = appointments.filter(
+            Q(user__username__icontains=q)
+            | Q(car__brand__icontains=q)
+            | Q(car__model__icontains=q)
+            | Q(phone__icontains=q)
+            | Q(email__icontains=q)
+        )
+
+    status_filter = request.GET.get("status", "")
+    if status_filter == "upcoming":
+        appointments = appointments.filter(date_rdv__gte=now)
+    elif status_filter == "past":
+        appointments = appointments.filter(date_rdv__lt=now)
+
+    paginator = Paginator(appointments, 15)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    # Stats
+    total_rdv = Appointment.objects.count()
+    upcoming_rdv = Appointment.objects.filter(date_rdv__gte=now).count()
+    past_rdv = Appointment.objects.filter(date_rdv__lt=now).count()
+    this_week = Appointment.objects.filter(
+        created_at__gte=now - timedelta(days=7)
+    ).count()
+
+    return render(
+        request,
+        "inventory/admin/admin_appointments.html",
+        {
+            "appointments": page_obj,
+            "page_obj": page_obj,
+            "q": q,
+            "status_filter": status_filter,
+            "total_rdv": total_rdv,
+            "upcoming_rdv": upcoming_rdv,
+            "past_rdv": past_rdv,
+            "this_week": this_week,
+        },
+    )
