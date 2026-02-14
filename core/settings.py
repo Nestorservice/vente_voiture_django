@@ -144,6 +144,19 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
+# --- CSRF TRUSTED ORIGINS (must be set OUTSIDE the DEBUG block) ---
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="https://web-production-08b3a.up.railway.app",
+    cast=Csv(),
+)
+# Auto-detect Railway domain if available
+_railway_domain = config("RAILWAY_PUBLIC_DOMAIN", default="")
+if _railway_domain:
+    _railway_origin = f"https://{_railway_domain}"
+    if _railway_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_railway_origin)
+
 # --- PRODUCTION SECURITY ---
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
@@ -155,4 +168,3 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
