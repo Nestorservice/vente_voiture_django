@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="text-center mb-5">
+
+        <h1 style="color: #d4af37;">✨ Espace Privilège VIP ✨</h1>
+
+        <p>Découvrez nos véhicules d'exception réservés à nos meilleurs clients.</p>
+
+    </div>
+
+
+
+    <div class="row">
+
+        {% for car in cars %}
+
+        <div class="col-md-4 mb-4">
+
+            <div class="card shadow-lg border-warning">
+
+                <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.brand }}">
+
+                <div class="card-body text-center">
+
+                    <h5 class="card-title">{{ car.brand }} {{ car.model }}</h5>
+
+                    <p class="badge bg-dark text-warning fs-6">{{ car.price }} FCFA</p>
+
+                    <a href="{% url 'car_detail' car.id %}" class="btn btn-dark w-100">Voir l'exception</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <p class="text-center">Aucun véhicule VIP disponible pour le moment.</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

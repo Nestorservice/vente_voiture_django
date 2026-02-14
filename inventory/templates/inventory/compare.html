@@ -1,0 +1,241 @@
+{% extends "inventory/base.html" %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    .compare-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .compare-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .compare-card img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+
+    .compare-card .card-body {
+        padding: 24px;
+    }
+
+    .compare-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .compare-row:last-child {
+        border-bottom: none;
+    }
+
+    .compare-label {
+        font-size: 0.8rem;
+        color: #999;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .compare-value {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .compare-value.highlight {
+        color: #007aff;
+        font-weight: 700;
+    }
+
+    .remove-compare {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .remove-compare:hover {
+        background: #dc3545;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    /* Add car select */
+    .add-car-section {
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 20px;
+        padding: 40px 30px;
+        text-align: center;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-car-section i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 15px;
+    }
+
+    .add-car-section select {
+        border-radius: 12px;
+        padding: 10px 16px;
+        border: 1.5px solid #ddd;
+        max-width: 300px;
+        width: 100%;
+    }
+
+    .vs-badge {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #007aff, #005ecb);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="compare-header">
+    <h2 class="fw-bold">
+        <i class="bi bi-arrow-left-right" style="color:#007aff;"></i> Comparateur
+    </h2>
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="bi bi-arrow-left me-1"></i> Retour au catalogue
+    </a>
+</div>
+
+<div class="row g-4 align-items-start">
+    {% for car in cars %}
+    <!-- CAR CARD -->
+    <div class="col-md-5">
+        <div class="compare-card">
+            <a href="{% url 'remove_from_compare' car.id %}" class="remove-compare" title="Retirer">
+                <i class="bi bi-x-lg"></i>
+            </a>
+
+            {% if car.image %}
+            <img src="{{ car.image.url }}" alt="{{ car.brand }} {{ car.model }}">
+            {% else %}
+            <div class="d-flex align-items-center justify-content-center bg-light" style="height:220px;">
+                <i class="bi bi-car-front text-muted" style="font-size:3rem;"></i>
+            </div>
+            {% endif %}
+
+            <div class="card-body">
+                <h4 class="fw-bold mb-3">{{ car.brand }} {{ car.model }}</h4>
+
+                <div class="compare-row">
+                    <span class="compare-label">Prix</span>
+                    <span class="compare-value highlight">{{ car.price|intcomma }} FCFA</span>
+                </div>
+                <div class="compare-row">
+                    <span class="compare-label">Année</span>
+                    <span class="compare-value">{{ car.year }}</span>
+                </div>
+                <div class="compare-row">
+                    <span class="compare-label">Kilométrage</span>
+                    <span class="compare-value">{{ car.kilometrage|intcomma }} km</span>
+                </div>
+                <div class="compare-row">
+                    <span class="compare-label">Carburant</span>
+                    <span class="compare-value">{{ car.fuel }}</span>
+                </div>
+                <div class="compare-row">
+                    <span class="compare-label">Transmission</span>
+                    <span class="compare-value">{{ car.transmission }}</span>
+                </div>
+                <div class="compare-row">
+                    <span class="compare-label">Ville</span>
+                    <span class="compare-value">{{ car.city }}</span>
+                </div>
+
+                <a href="{% url 'car_detail' car.id %}" class="btn btn-dark w-100 rounded-pill fw-bold mt-3">
+                    <i class="bi bi-arrow-right-circle me-1"></i> Voir détails
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if forloop.first and cars|length == 2 %}
+    <!-- VS BADGE -->
+    <div class="col-md-2 d-flex align-items-center justify-content-center" style="min-height: 300px;">
+        <div class="vs-badge">VS</div>
+    </div>
+    {% endif %}
+
+    {% empty %}
+    <!-- EMPTY STATE -->
+    <div class="col-12">
+        <div class="add-car-section">
+            <i class="bi bi-arrow-left-right"></i>
+            <h4 class="text-muted mb-2">Aucun véhicule à comparer</h4>
+            <p class="text-muted small mb-3">Sélectionnez un véhicule ci-dessous pour démarrer la comparaison.</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if cars|length < 2 %} <!-- ADD ANOTHER CAR -->
+        <div class="{% if cars|length == 1 %}col-md-5 offset-md-2{% else %}col-md-6 mx-auto{% endif %}">
+            <div class="add-car-section">
+                <i class="bi bi-plus-circle"></i>
+                <h5 class="text-muted mb-3">Ajouter un véhicule</h5>
+                <form method="GET" action="" id="addCompareForm">
+                    <select class="form-select mb-3" id="compareCarSelect">
+                        <option value="">— Choisir un véhicule —</option>
+                        {% for c in all_cars %}
+                        <option value="{{ c.id }}">{{ c.brand }} {{ c.model }} ({{ c.year }}) — {{ c.price|intcomma }}
+                            FCFA</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="addToCompare()">
+                        <i class="bi bi-plus-lg me-1"></i> Ajouter
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+</div>
+
+<script>
+    function addToCompare() {
+        const select = document.getElementById('compareCarSelect');
+        const carId = select.value;
+        if (carId) {
+            window.location.href = "{% url 'home' %}".replace('', '') + 'comparer/ajouter/' + carId + '/';
+        }
+    }
+</script>
+{% endblock %}

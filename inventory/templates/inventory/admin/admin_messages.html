@@ -1,0 +1,81 @@
+{% extends "inventory/admin/base_admin.html" %}
+
+{% block page_title %}Messages{% endblock %}
+{% block title %}Messages{% endblock %}
+
+{% block extra_css %}
+<style>
+    .conv-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #eee;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
+        margin-bottom: 10px;
+    }
+
+    .conv-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        border-color: var(--primary);
+    }
+
+    .conv-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #fff;
+    }
+
+    .conv-unread {
+        border-left: 3px solid #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h5 class="fw-bold mb-1">Messagerie</h5>
+    <p class="text-muted small mb-0">Conversations avec vos clients</p>
+</div>
+
+{% for conv in conversations %}
+<a href="{% url 'admin_conversation' conv.client.id %}" class="conv-card {% if conv.unread %}conv-unread{% endif %}">
+    <div class="conv-avatar" style="background:hsl({{ conv.client.id|add:100 }}, 60%, 45%);">
+        {{ conv.client.username|first|upper }}
+    </div>
+    <div class="flex-fill">
+        <div class="d-flex justify-content-between align-items-center">
+            <span style="font-weight:600; font-size:0.95rem;">{{ conv.client.username }}</span>
+            <span style="font-size:0.7rem; color:var(--text-muted);">{{ conv.last_message.created_at|timesince }}</span>
+        </div>
+        <div style="font-size:0.8rem; color:var(--text-muted);" class="text-truncate" style="max-width:400px;">
+            {% if conv.car %}🚗 {{ conv.car.brand }} · {% endif %}{{ conv.last_message.content|truncatewords:12 }}
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        {% if conv.unread %}
+        <span
+            style="background:#dc3545; color:#fff; font-size:0.7rem; font-weight:700; padding:3px 10px; border-radius:10px;">{{
+            conv.unread }}</span>
+        {% endif %}
+        <span style="font-size:0.72rem; color:var(--text-muted);">{{ conv.total }} msg</span>
+    </div>
+</a>
+{% empty %}
+<div class="text-center py-5">
+    <i class="bi bi-chat-dots" style="font-size:3rem; color:#ddd;"></i>
+    <p class="text-muted mt-3">Aucune conversation</p>
+</div>
+{% endfor %}
+{% endblock %}

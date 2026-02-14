@@ -1,0 +1,682 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel Admin{% endblock %} | AUTOVENTE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root {
+            --sidebar-w: 260px;
+            --topbar-h: 60px;
+            --primary: #007aff;
+            --primary-dark: #005ecb;
+            --gold: #d4af37;
+            --bg-body: #f0f2f5;
+            --bg-card: #ffffff;
+            --bg-sidebar: #0a0a0a;
+            --text-main: #333;
+            --text-muted: #888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* ═══ SIDEBAR ═══ */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: var(--bg-sidebar);
+            color: #fff;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-brand {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-brand img {
+            height: 36px;
+        }
+
+        .sidebar-brand h5 {
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            margin: 0;
+            color: #fff;
+        }
+
+        .sidebar-brand small {
+            display: block;
+            color: var(--gold);
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav .nav-section {
+            padding: 8px 24px 6px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #555;
+            font-weight: 700;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 24px;
+            color: #999;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .sidebar-nav a.active {
+            color: #fff;
+            background: rgba(0, 122, 255, 0.1);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-nav a i {
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
+        }
+
+        .sidebar-nav .badge-nav {
+            margin-left: auto;
+            background: #dc3545;
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-footer a {
+            color: #777;
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .sidebar-footer a:hover {
+            color: #fff;
+        }
+
+        /* ═══ TOPBAR ═══ */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--bg-card);
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 999;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .topbar-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .online-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ═══ MAIN CONTENT ═══ */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            margin-top: var(--topbar-h);
+            padding: 24px;
+            min-height: calc(100vh - var(--topbar-h));
+        }
+
+        /* ═══ CARDS ═══ */
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-card .stat-change {
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        /* ═══ CHART CARDS ═══ */
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #eee;
+        }
+
+        .chart-card h6 {
+            font-weight: 700;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+
+        /* ═══ TABLE ═══ */
+        .table-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
+
+        .table-card .table {
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .table-card .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 2px solid #eee;
+            padding: 12px 16px;
+        }
+
+        .table-card .table td {
+            padding: 12px 16px;
+            vertical-align: middle;
+        }
+
+        /* ═══ BADGES ═══ */
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .badge-disponible {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-vendu {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .badge-attente {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        /* ═══ SEARCH BAR ═══ */
+        .admin-search {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid #eee;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-search input {
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            background: transparent;
+        }
+
+        /* ═══ BTN ACTIONS ═══ */
+        .btn-action {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+            background: #fff;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .btn-action.danger:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        /* ═══ PAGINATION ═══ */
+        .admin-pagination .page-link {
+            border: 1px solid #eee;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            border-radius: 10px !important;
+            margin: 0 3px;
+        }
+
+        .admin-pagination .page-item.active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ═══ MOBILE OVERLAY ═══ */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        /* ═══ BOTTOM NAV (mobile) ═══ */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--bg-sidebar);
+            z-index: 1001;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .bottom-nav-inner {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-around;
+            height: 100%;
+            padding: 0 4px;
+        }
+
+        .bottom-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: #777;
+            text-decoration: none;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 6px 8px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            min-width: 52px;
+        }
+
+        .bottom-nav a i {
+            font-size: 1.15rem;
+        }
+
+        .bottom-nav a.active {
+            color: var(--primary);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .bottom-nav a:hover {
+            color: #fff;
+        }
+
+        .bottom-nav .badge-bottom {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #dc3545;
+            color: #fff;
+            font-size: 0.55rem;
+            padding: 1px 5px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .topbar {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-bottom: 80px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .bottom-nav {
+                display: block;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 16px;
+                padding-bottom: 80px;
+            }
+
+            .stat-card .stat-value {
+                font-size: 1.3rem;
+            }
+
+            .topbar {
+                padding: 0 16px;
+            }
+        }
+
+        /* ═══ SCROLLBAR ═══ */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+            {
+            % block extra_css %
+        }
+
+            {
+            % endblock %
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="Logo">
+            <div>
+                <h5>AUTOVENTE</h5>
+                <small>Panel Admin</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">Principal</div>
+            <a href="{% url 'admin_dashboard' %}" class="{% if request.path == '/panel/' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <a href="{% url 'admin_cars' %}" class="{% if '/panel/voitures' in request.path %}active{% endif %}">
+                <i class="bi bi-car-front-fill"></i> Véhicules
+            </a>
+
+            <div class="nav-section mt-3">Communication</div>
+            <a href="{% url 'admin_messages' %}" class="{% if '/panel/messages' in request.path %}active{% endif %}">
+                <i class="bi bi-chat-dots-fill"></i> Messages
+                {% if unread_count %}<span class="badge-nav">{{ unread_count }}</span>{% endif %}
+            </a>
+
+            <div class="nav-section mt-3">Gestion</div>
+            <a href="{% url 'admin_users' %}" class="{% if '/panel/utilisateurs' in request.path %}active{% endif %}">
+                <i class="bi bi-people-fill"></i> Utilisateurs
+            </a>
+            <a href="{% url 'admin_activity' %}" class="{% if '/panel/activite' in request.path %}active{% endif %}">
+                <i class="bi bi-activity"></i> Activité
+            </a>
+
+            <div class="nav-section mt-3">Externe</div>
+            <a href="{% url 'home' %}" target="_blank">
+                <i class="bi bi-box-arrow-up-right"></i> Voir le site
+            </a>
+            <a href="/admin/" target="_blank">
+                <i class="bi bi-gear-fill"></i> Django Admin
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'home' %}">
+                <i class="bi bi-arrow-left-circle"></i> Retour au site
+            </a>
+        </div>
+    </aside>
+
+    <!-- MOBILE OVERLAY -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
+            <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+        </div>
+        <div class="topbar-right">
+            <div class="online-badge">
+                <span class="online-dot"></span>
+                En ligne
+            </div>
+            <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">
+                <i class="bi bi-person-circle me-1" style="color:var(--primary);"></i>
+                {{ user.username }}
+            </span>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        <!-- TOAST -->
+        {% if messages %}
+        <div style="position:fixed; top:70px; right:20px; z-index:9999;">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show"
+                style="border-radius:12px; font-size:0.85rem; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size:0.65rem;"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- BOTTOM NAV (mobile) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="{% url 'admin_dashboard' %}" class="{% if request.path == '/panel/' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_cars' %}" class="{% if '/panel/voitures' in request.path %}active{% endif %}">
+                <i class="bi bi-car-front-fill"></i>
+                <span>Véhicules</span>
+            </a>
+            <a href="{% url 'admin_messages' %}" class="{% if '/panel/messages' in request.path %}active{% endif %}"
+                style="position:relative;">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Messages</span>
+                {% if unread_count %}<span class="badge-bottom">{{ unread_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'admin_users' %}" class="{% if '/panel/utilisateurs' in request.path %}active{% endif %}">
+                <i class="bi bi-people-fill"></i>
+                <span>Users</span>
+            </a>
+            <a href="{% url 'admin_activity' %}" class="{% if '/panel/activite' in request.path %}active{% endif %}">
+                <i class="bi bi-activity"></i>
+                <span>Activité</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('mobileOverlay').classList.toggle('active');
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('mobileOverlay').classList.remove('active');
+        }
+
+        // Auto-close alerts
+        document.querySelectorAll('.alert').forEach(a => {
+            setTimeout(() => { a.classList.remove('show'); a.remove(); }, 4000);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

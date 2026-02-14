@@ -1,0 +1,101 @@
+{% extends "inventory/admin/base_admin.html" %}
+
+{% block page_title %}Activité{% endblock %}
+{% block title %}Activité{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h5 class="fw-bold mb-1">Suivi d'activité</h5>
+        <p class="text-muted small mb-0">
+            <span class="badge bg-success" style="font-size:0.72rem;">{{ unique_ips_today }} IP unique{{
+                unique_ips_today|pluralize:"s" }} aujourd'hui</span>
+        </p>
+    </div>
+    <form method="GET" class="d-flex gap-2">
+        <div class="admin-search" style="min-width:220px;">
+            <i class="bi bi-search text-muted"></i>
+            <input type="text" name="q" placeholder="IP, page, utilisateur..." value="{{ q }}">
+        </div>
+        <button class="btn btn-primary rounded-pill px-3" type="submit">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Utilisateur</th>
+                    <th>IP</th>
+                    <th class="d-none d-md-table-cell">Page</th>
+                    <th class="d-none d-lg-table-cell">Navigateur</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visit in visits %}
+                <tr>
+                    <td style="font-size:0.8rem; white-space:nowrap;">{{ visit.created_at|date:"d/m H:i" }}</td>
+                    <td>
+                        {% if visit.user %}
+                        <span style="font-weight:600;">{{ visit.user.username }}</span>
+                        {% else %}
+                        <span class="text-muted">Anonyme</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <code
+                            style="background:#f0f2f5; padding:3px 8px; border-radius:6px; font-size:0.78rem;">{{ visit.ip_address }}</code>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        <span style="font-size:0.8rem; color:var(--primary);">{{ visit.page|truncatechars:50 }}</span>
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        <span style="font-size:0.72rem; color:var(--text-muted);">
+                            {% if 'Chrome' in visit.user_agent %}
+                            <i class="bi bi-browser-chrome me-1"></i>Chrome
+                            {% elif 'Firefox' in visit.user_agent %}
+                            <i class="bi bi-browser-firefox me-1"></i>Firefox
+                            {% elif 'Safari' in visit.user_agent %}
+                            <i class="bi bi-browser-safari me-1"></i>Safari
+                            {% elif 'Edge' in visit.user_agent %}
+                            <i class="bi bi-browser-edge me-1"></i>Edge
+                            {% else %}
+                            {{ visit.user_agent|truncatechars:30 }}
+                            {% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">Aucune visite enregistrée</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination admin-pagination mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}">‹</a></li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %} <li class="page-item"><a
+                class="page-link" href="?page={{ i }}&q={{ q }}">{{ i }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}">›</a></li>
+            {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

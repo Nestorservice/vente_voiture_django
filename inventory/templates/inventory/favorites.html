@@ -1,0 +1,149 @@
+{% extends 'inventory/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    .favorites-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .favorites-header h2 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .fav-card {
+        border-radius: 18px;
+        border: none;
+        overflow: hidden;
+        transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        background: #fff;
+    }
+
+    .fav-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .fav-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.4s;
+    }
+
+    .fav-card:hover .card-img-top {
+        transform: scale(1.04);
+    }
+
+    .fav-card .card-img-wrapper {
+        overflow: hidden;
+    }
+
+    .remove-fav {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff2d2d;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .remove-fav:hover {
+        background: #ff2d2d;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    .empty-favorites {
+        padding: 60px 20px;
+    }
+
+    .empty-favorites .empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fff0f0, #ffe0e0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2.5rem;
+        color: #ff6b6b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="favorites-header">
+        <h2 class="fw-bold">
+            <i class="bi bi-heart-fill text-danger"></i> Mes Coups de Cœur
+        </h2>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i> Retour au stock
+        </a>
+    </div>
+
+    {% if favorites %}
+    <div class="row g-4">
+        {% for fav in favorites %}
+        <div class="col-md-4">
+            <div class="fav-card card h-100 shadow-sm">
+                <div class="card-img-wrapper">
+                    {% if fav.car.image %}
+                    <img src="{{ fav.car.image.url }}" class="card-img-top" alt="{{ fav.car.brand }}">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center bg-light" style="height:200px;">
+                        <i class="bi bi-car-front text-muted" style="font-size:3rem;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="fw-bold mb-0" style="font-size:1.05rem;">{{ fav.car.brand }} {{ fav.car.model }}</h5>
+                        <a href="{% url 'toggle_favorite' fav.car.id %}" class="remove-fav" title="Retirer des favoris">
+                            <i class="bi bi-heart-fill"></i>
+                        </a>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>{{ fav.car.city }}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-dark rounded-pill px-3 py-2">{{ fav.car.year }}</span>
+                        <span class="fw-bold" style="color:#007aff;">{{ fav.car.price|intcomma }} FCFA</span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 p-3 pt-0">
+                    <a href="{% url 'car_detail' fav.car.id %}" class="btn btn-dark w-100 rounded-pill fw-bold">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Voir le véhicule
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-favorites text-center">
+        <div class="empty-icon">
+            <i class="bi bi-heart"></i>
+        </div>
+        <h3 class="text-muted mt-3">Vous n'avez pas encore de favoris</h3>
+        <p class="text-muted">Parcourez notre catalogue et cliquez sur le cœur pour enregistrer une voiture.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary btn-lg rounded-pill mt-3 px-5 shadow">
+            <i class="bi bi-car-front me-1"></i> Découvrir le stock
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

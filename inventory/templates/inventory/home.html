@@ -1,0 +1,501 @@
+{% extends "inventory/base.html" %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    /* --- HERO SECTION --- */
+    .hero-stats {
+        background: linear-gradient(135deg, #000 0%, #111 100%);
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid rgba(255, 215, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #FFD700;
+        font-family: 'Syncopate', sans-serif;
+    }
+
+    .stat-label {
+        color: #999;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    /* --- SEARCH BAR --- */
+    .search-section {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        margin-bottom: 20px;
+    }
+
+    .search-input {
+        border-radius: 12px !important;
+        padding: 14px 20px !important;
+        border: 2px solid #e9ecef !important;
+        font-size: 1rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .search-input:focus {
+        border-color: #007aff !important;
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+    }
+
+    .btn-search {
+        border-radius: 12px !important;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #007aff, #005ecb);
+        border: none;
+        font-weight: 600;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+    }
+
+    /* --- FILTERS --- */
+    .filter-panel {
+        background: #f8f9fa;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 25px;
+        border: 1px solid #e9ecef;
+    }
+
+    .filter-panel label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .filter-panel select,
+    .filter-panel input {
+        border-radius: 10px;
+        border: 1.5px solid #ddd;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s;
+    }
+
+    .filter-panel select:focus,
+    .filter-panel input:focus {
+        border-color: #007aff;
+        box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    }
+
+    .results-count {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 15px;
+    }
+
+    .results-count strong {
+        color: #007aff;
+    }
+
+    /* --- CAR CARDS --- */
+    .car-card {
+        border-radius: 20px;
+        border: none;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .car-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+    }
+
+    .car-card .card-img-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 220px;
+    }
+
+    .car-card .card-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .car-card:hover .card-img-wrapper img {
+        transform: scale(1.05);
+    }
+
+    /* FAVORITE HEART */
+    .favorite-heart {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 42px;
+        height: 42px;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(8px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .favorite-heart:hover {
+        background: #ff2d2d;
+        color: #fff;
+        transform: scale(1.15);
+        box-shadow: 0 4px 15px rgba(255, 45, 45, 0.4);
+    }
+
+    .favorite-heart .bi-heart-fill {
+        color: #ff2d2d;
+    }
+
+    /* BADGES */
+    .car-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f0f2f5;
+        color: #555;
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 0.78rem;
+        font-weight: 500;
+    }
+
+    /* PRICE TAG */
+    .price-gradient {
+        background: linear-gradient(135deg, #007aff, #005ecb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .price-currency {
+        font-size: 0.8rem;
+        font-weight: 500;
+        -webkit-text-fill-color: #888;
+    }
+
+    /* CTA BUTTON */
+    .btn-cta {
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+
+    .btn-cta:hover {
+        background: #007aff;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+    }
+
+    /* --- PAGINATION --- */
+    .pagination-wrapper {
+        margin-top: 40px;
+    }
+
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 3px;
+        border: none;
+        color: #333;
+        font-weight: 500;
+        padding: 10px 16px;
+        transition: all 0.2s;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #007aff, #005ecb);
+        box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    }
+
+    .pagination .page-link:hover {
+        background: #f0f2f5;
+        color: #007aff;
+    }
+
+    /* --- EMPTY STATE --- */
+    .empty-state {
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+        .hero-stats {
+            padding: 20px 10px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .car-card .card-img-wrapper {
+            height: 180px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO STATS -->
+<div class="hero-stats">
+    <div class="row">
+        <div class="col-4 stat-item">
+            <div class="stat-number" data-count="{{ total_results }}">0</div>
+            <div class="stat-label">Véhicules disponibles</div>
+        </div>
+        <div class="col-4 stat-item">
+            <div class="stat-number"><i class="bi bi-shield-check" style="font-size:1.6rem;"></i></div>
+            <div class="stat-label">Contrôlés & vérifiés</div>
+        </div>
+        <div class="col-4 stat-item">
+            <div class="stat-number"><i class="bi bi-geo-alt" style="font-size:1.6rem;"></i></div>
+            <div class="stat-label">Partout au Cameroun</div>
+        </div>
+    </div>
+</div>
+
+<!-- SEARCH BAR -->
+<div class="search-section">
+    <form method="GET" action="{% url 'home' %}" id="searchForm">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"
+                style="border-radius:12px 0 0 12px; border:2px solid #e9ecef; border-right:0;">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" name="q" class="form-control search-input border-start-0"
+                placeholder="Rechercher par marque, modèle, ville..." value="{{ query|default:'' }}"
+                style="border-radius:0;">
+            <button class="btn btn-primary btn-search" type="submit">
+                <i class="bi bi-search me-1"></i> Rechercher
+            </button>
+        </div>
+
+        <!-- TOGGLE FILTERS -->
+        <div class="mt-3 text-center">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-4" data-bs-toggle="collapse"
+                data-bs-target="#advancedFilters">
+                <i class="bi bi-sliders me-1"></i> Filtres avancés
+            </button>
+        </div>
+
+        <!-- ADVANCED FILTERS -->
+        <div class="collapse {% if fuel or transmission or price_min or price_max or year_min or year_max or selected_city %}show{% endif %}"
+            id="advancedFilters">
+            <div class="filter-panel mt-3">
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <label>Carburant</label>
+                        <select name="fuel" class="form-select">
+                            <option value="">Tous</option>
+                            {% for value, label in fuel_choices %}
+                            <option value="{{ value }}" {% if fuel == value %} selected {% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label>Transmission</label>
+                        <select name="transmission" class="form-select">
+                            <option value="">Toutes</option>
+                            {% for value, label in transmission_choices %}
+                            <option value="{{ value }}" {% if transmission == value %} selected {% endif %}>{{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label>Prix min (FCFA)</label>
+                        <input type="number" name="price_min" class="form-control" placeholder="0"
+                            value="{{ price_min }}">
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label>Prix max (FCFA)</label>
+                        <input type="number" name="price_max" class="form-control" placeholder="∞"
+                            value="{{ price_max }}">
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label>Année min</label>
+                        <input type="number" name="year_min" class="form-control" placeholder="2000"
+                            value="{{ year_min }}">
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label>Année max</label>
+                        <input type="number" name="year_max" class="form-control" placeholder="2026"
+                            value="{{ year_max }}">
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label>Ville</label>
+                        <select name="city" class="form-select">
+                            <option value="">Toutes</option>
+                            {% for c in available_cities %}
+                            <option value="{{ c }}" {% if selected_city == c %} selected {% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 col-6 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill flex-fill">
+                            <i class="bi bi-funnel-fill me-1"></i> Filtrer
+                        </button>
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- RESULTS COUNT -->
+<div class="results-count">
+    <strong>{{ total_results }}</strong> véhicule{{ total_results|pluralize }} trouvé{{ total_results|pluralize }}
+    {% if query %} pour « <strong>{{ query }}</strong> »{% endif %}
+</div>
+
+<!-- CAR GRID -->
+<div class="row g-4">
+    {% for car in cars %}
+    <div class="col-lg-4 col-md-6 mb-2">
+        <div class="car-card card h-100 shadow-sm">
+            <!-- IMAGE + HEART -->
+            <div class="card-img-wrapper">
+                {% if car.image %}
+                <img src="{{ car.image.url }}" alt="{{ car.brand }} {{ car.model }}">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                    <i class="bi bi-car-front text-muted" style="font-size:3rem;"></i>
+                </div>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                <a href="{% url 'toggle_favorite' car.id %}" class="favorite-heart">
+                    <i class="bi {% if car.id in user_favorites %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="favorite-heart" title="Connexion requise">
+                    <i class="bi bi-heart"></i>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="card-body p-3">
+                <h5 class="fw-bold mb-2" style="font-size:1.05rem;">{{ car.brand }} {{ car.model }}</h5>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="car-badge">📅 {{ car.year }}</span>
+                    <span class="car-badge">🛣 {{ car.kilometrage|intcomma }} km</span>
+                    <span class="car-badge">⛽ {{ car.fuel }}</span>
+                </div>
+
+                <div class="mb-3">
+                    <span class="price-gradient">{{ car.price|intcomma }}</span>
+                    <span class="price-currency"> FCFA</span>
+                </div>
+
+                <p class="text-muted small mb-0" style="line-height:1.5;">
+                    {{ car.description|truncatewords:12 }}
+                </p>
+            </div>
+
+            <div class="card-footer bg-white border-0 p-3 pt-0">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'car_detail' car.id %}" class="btn-cta flex-fill">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Consulter
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'add_to_compare' car.id %}" class="btn btn-outline-primary rounded-pill px-3"
+                        title="Comparer" style="font-size:0.85rem;">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% empty %}
+    <div class="col-12 empty-state text-center">
+        <i class="bi bi-car-front"></i>
+        <h3 class="text-muted mt-3">Aucun véhicule trouvé</h3>
+        <p class="text-muted">Essayez d'ajuster vos filtres ou revenez bientôt !</p>
+        <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Voir tout le catalogue
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- PAGINATION -->
+{% if page_obj.has_other_pages %}
+<div class="pagination-wrapper d-flex justify-content-center">
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if fuel %}&fuel={{ fuel }}{% endif %}{% if transmission %}&transmission={{ transmission }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link"
+                    href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if fuel %}&fuel={{ fuel }}{% endif %}{% if transmission %}&transmission={{ transmission }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if fuel %}&fuel={{ fuel }}{% endif %}{% if transmission %}&transmission={{ transmission }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+{% endblock %}

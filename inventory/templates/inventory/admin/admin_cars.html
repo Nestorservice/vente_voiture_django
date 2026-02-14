@@ -1,0 +1,128 @@
+{% extends "inventory/admin/base_admin.html" %}
+{% load humanize %}
+
+{% block page_title %}Véhicules{% endblock %}
+{% block title %}Véhicules{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h5 class="fw-bold mb-1">Gestion des Véhicules</h5>
+        <p class="text-muted small mb-0">{{ page_obj.paginator.count }} véhicule{{
+            page_obj.paginator.count|pluralize:"s" }} au total</p>
+    </div>
+    <a href="{% url 'admin_car_create' %}" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-plus-lg me-1"></i> Ajouter
+    </a>
+</div>
+
+<!-- SEARCH + FILTER -->
+<div class="d-flex flex-wrap gap-3 mb-4">
+    <form method="GET" class="d-flex gap-2 flex-fill flex-wrap">
+        <div class="admin-search flex-fill" style="min-width:200px;">
+            <i class="bi bi-search text-muted"></i>
+            <input type="text" name="q" placeholder="Rechercher marque, modèle, ville..." value="{{ q }}">
+        </div>
+        <select name="status" class="form-select" style="max-width:180px; border-radius:12px; font-size:0.85rem;"
+            onchange="this.form.submit()">
+            <option value="">Tous les statuts</option>
+            {% for val, label in statut_choices %}
+            <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-primary rounded-pill px-3" type="submit">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+</div>
+
+<!-- TABLE -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Véhicule</th>
+                    <th class="d-none d-md-table-cell">Prix</th>
+                    <th class="d-none d-md-table-cell">Année</th>
+                    <th class="d-none d-lg-table-cell">Ville</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>
+                        {% if car.image %}
+                        <img src="{{ car.image.url }}" alt=""
+                            style="width:45px; height:45px; border-radius:12px; object-fit:cover;">
+                        {% else %}
+                        <div
+                            style="width:45px; height:45px; border-radius:12px; background:#f0f2f5; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-car-front text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">{{ car.brand }} {{ car.model }}</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted);">{{ car.fuel }} · {{ car.transmission }}
+                        </div>
+                    </td>
+                    <td class="d-none d-md-table-cell fw-bold">{{ car.price|intcomma }} F</td>
+                    <td class="d-none d-md-table-cell">{{ car.year }}</td>
+                    <td class="d-none d-lg-table-cell">{{ car.city }}</td>
+                    <td>
+                        <span
+                            class="badge-status {% if car.status == 'Disponible' %}badge-disponible{% elif car.status == 'Vendu' %}badge-vendu{% else %}badge-attente{% endif %}">
+                            {{ car.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'admin_car_toggle' car.pk %}" class="btn-action" title="Toggle statut">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </a>
+                            <a href="{% url 'admin_car_edit' car.pk %}" class="btn-action" title="Modifier">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a href="{% url 'admin_car_delete' car.pk %}" class="btn-action danger" title="Supprimer">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">Aucun véhicule trouvé</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PAGINATION -->
+{% if page_obj.has_other_pages %}
+<nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination admin-pagination mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link"
+                href="?page={{ page_obj.previous_page_number }}&q={{ q }}&status={{ status_filter }}">‹</a></li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %} <li class="page-item"><a
+                class="page-link" href="?page={{ i }}&q={{ q }}&status={{ status_filter }}">{{ i }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}&q={{ q }}&status={{ status_filter }}">›</a></li>
+            {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

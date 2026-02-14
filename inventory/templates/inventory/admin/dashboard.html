@@ -1,0 +1,294 @@
+{% extends "inventory/admin/base_admin.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- STATS CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_cars }}</div>
+                    <div class="stat-label">Total Véhicules</div>
+                </div>
+                <div class="stat-icon" style="background:#e3f2fd; color:#1976d2;">
+                    <i class="bi bi-car-front-fill"></i>
+                </div>
+            </div>
+            <div class="stat-change text-success mt-2">
+                <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i>
+                {{ available_cars }} disponible{{ available_cars|pluralize:"s" }}
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ sold_cars }}</div>
+                    <div class="stat-label">Vendus</div>
+                </div>
+                <div class="stat-icon" style="background:#fce4ec; color:#c62828;">
+                    <i class="bi bi-bag-check-fill"></i>
+                </div>
+            </div>
+            <div class="stat-change text-muted mt-2">
+                <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i>
+                {{ pending_cars }} en attente
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_users }}</div>
+                    <div class="stat-label">Utilisateurs</div>
+                </div>
+                <div class="stat-icon" style="background:#e8f5e9; color:#2e7d32;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="stat-change mt-2" style="color:var(--primary);">
+                <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i>
+                {{ online_count }} en ligne
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_visits }}</div>
+                    <div class="stat-label">Visites (30j)</div>
+                </div>
+                <div class="stat-icon" style="background:#fff3e0; color:#e65100;">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+            <div class="stat-change text-warning mt-2">
+                <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i>
+                {{ today_visits }} aujourd'hui
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ROW 2: Messages + RDV -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_messages }}</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat-icon" style="background:#f3e5f5; color:#7b1fa2;">
+                    <i class="bi bi-chat-dots-fill"></i>
+                </div>
+            </div>
+            {% if unread_messages %}
+            <div class="stat-change text-danger mt-2">
+                <i class="bi bi-envelope-fill" style="font-size:0.65rem;"></i>
+                {{ unread_messages }} non lu{{ unread_messages|pluralize:"s" }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_appointments }}</div>
+                    <div class="stat-label">Rendez-vous</div>
+                </div>
+                <div class="stat-icon" style="background:#e0f7fa; color:#00838f;">
+                    <i class="bi bi-calendar-check-fill"></i>
+                </div>
+            </div>
+            <div class="stat-change text-info mt-2">
+                <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i>
+                {{ recent_appointments }} cette semaine
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-pie-chart-fill me-2" style="color:var(--primary);"></i>Véhicules par statut</h6>
+            <canvas id="statusChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-bar-chart-fill me-2" style="color:#e65100;"></i>Visites / 7 derniers jours</h6>
+            <canvas id="visitsChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-graph-up me-2" style="color:#2e7d32;"></i>Rendez-vous / mois</h6>
+            <canvas id="rdvChart" height="220"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT TABLES -->
+<div class="row g-3">
+    <!-- Recent Cars -->
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-clock-fill me-2" style="color:var(--gold);"></i>Derniers véhicules</h6>
+            {% for car in recent_cars %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                {% if car.image %}
+                <img src="{{ car.image.url }}" alt=""
+                    style="width:40px; height:40px; border-radius:10px; object-fit:cover;">
+                {% else %}
+                <div
+                    style="width:40px; height:40px; border-radius:10px; background:#f0f2f5; display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-car-front text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="flex-fill">
+                    <div style="font-weight:600; font-size:0.85rem;">{{ car.brand }} {{ car.model }}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">{{ car.created_at|timesince }}</div>
+                </div>
+                <span
+                    class="badge-status {% if car.status == 'Disponible' %}badge-disponible{% elif car.status == 'Vendu' %}badge-vendu{% else %}badge-attente{% endif %}">
+                    {{ car.status }}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-muted small">Aucun véhicule</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent RDV -->
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-calendar-event me-2" style="color:#00838f;"></i>Derniers RDV</h6>
+            {% for rdv in recent_rdvs %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <div
+                    style="width:40px; height:40px; border-radius:10px; background:#e0f7fa; display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-person-fill" style="color:#00838f;"></i>
+                </div>
+                <div class="flex-fill">
+                    <div style="font-weight:600; font-size:0.85rem;">{{ rdv.user.username }}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">{{ rdv.car.brand }} · {{
+                        rdv.date_rdv|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted small">Aucun rendez-vous</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Messages -->
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-chat-left-text-fill me-2" style="color:#7b1fa2;"></i>Derniers messages</h6>
+            {% for msg in recent_msgs %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <div
+                    style="width:40px; height:40px; border-radius:10px; background:#f3e5f5; display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-chat-fill" style="color:#7b1fa2;"></i>
+                </div>
+                <div class="flex-fill">
+                    <div style="font-weight:600; font-size:0.85rem;">{{ msg.sender.username }}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">{{ msg.content|truncatewords:8 }}</div>
+                </div>
+                {% if not msg.is_read %}
+                <span style="width:8px; height:8px; background:#dc3545; border-radius:50;"></span>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-muted small">Aucun message</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Cars by Status (Doughnut) ---
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Disponible', 'Vendu', 'En attente'],
+            datasets: [{
+                data: [{{ available_cars }}, {{ sold_cars }}, {{ pending_cars }}],
+        backgroundColor: ['#4caf50', '#ef5350', '#ff9800'],
+        borderWidth: 0,
+        borderRadius: 6,
+        spacing: 4,
+            }]
+        },
+        options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: {
+            legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } }
+        }
+    }
+    });
+
+    // --- Visits per Day (Bar) ---
+    new Chart(document.getElementById('visitsChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ visit_labels| safe }},
+        datasets: [{
+            label: 'Visites',
+            data: {{ visit_data| safe }},
+        backgroundColor: 'rgba(0, 122, 255, 0.7)',
+        borderRadius: 8,
+        borderSkipped: false,
+            }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+            x: { grid: { display: false } }
+        }
+    }
+    });
+
+    // --- RDV per Month (Line) ---
+    new Chart(document.getElementById('rdvChart'), {
+        type: 'line',
+        data: {
+            labels: {{ rdv_labels| safe }},
+        datasets: [{
+            label: 'RDV',
+            data: {{ rdv_data| safe }},
+        borderColor: '#4caf50',
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: '#4caf50',
+            }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+            x: { grid: { display: false } }
+        }
+    }
+    });
+</script>
+{% endblock %}

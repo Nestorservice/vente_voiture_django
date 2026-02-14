@@ -1,0 +1,113 @@
+{% extends "inventory/base.html" %}
+
+{% block extra_css %}
+<style>
+    .conv-page {
+        min-height: 60vh;
+        padding: 20px 0;
+    }
+
+    .conv-box {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .conv-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .conv-body {
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+
+    .bubble {
+        max-width: 75%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+        font-size: 0.88rem;
+    }
+
+    .bubble-me {
+        background: #007aff;
+        color: #fff;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+    }
+
+    .bubble-them {
+        background: #fff;
+        border: 1px solid #eee;
+        border-bottom-left-radius: 4px;
+    }
+
+    .bubble-time {
+        font-size: 0.65rem;
+        opacity: 0.7;
+        margin-top: 3px;
+    }
+
+    .conv-input {
+        padding: 14px 20px;
+        border-top: 1px solid #eee;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="conv-page">
+    <a href="{% url 'my_messages' %}" class="btn btn-outline-secondary rounded-pill px-4 btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+
+    <div class="conv-box">
+        <div class="conv-header">
+            <div
+                style="width:36px; height:36px; border-radius:10px; background:hsl({{ partner.id|add:100 }}, 60%, 45%); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700;">
+                {{ partner.username|first|upper }}
+            </div>
+            <span class="fw-bold">{{ partner.username }}</span>
+        </div>
+
+        <div class="conv-body" id="convBody">
+            {% for msg in messages_list %}
+            <div class="d-flex">
+                <div class="bubble {% if msg.sender == user %}bubble-me{% else %}bubble-them{% endif %}">
+                    {{ msg.content }}
+                    <div class="bubble-time">{{ msg.created_at|date:"d/m H:i" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center text-muted py-3">Début de la conversation</p>
+            {% endfor %}
+        </div>
+
+        <div class="conv-input">
+            <form method="POST" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="content" class="form-control" placeholder="Votre message..."
+                    style="border-radius:12px;" required>
+                <button type="submit" class="btn btn-primary rounded-pill px-3">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const b = document.getElementById('convBody');
+    b.scrollTop = b.scrollHeight;
+</script>
+{% endblock %}

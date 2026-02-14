@@ -1,0 +1,223 @@
+{% extends 'inventory/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    /* --- VARIABLES & THEMES --- */
+    :root {
+        --bg-body: #f8f9fa;
+        --text-color: #1a1a1a;
+        --card-bg: #ffffff;
+        --accent-color: #d4af37;
+        --slider-bg: radial-gradient(circle at center, #333, #000);
+    }
+
+    body.dark-mode {
+        --bg-body: #050505;
+        --text-color: #ffffff;
+        --card-bg: #111111;
+        --slider-bg: radial-gradient(circle at center, #1a1a1a, #000);
+    }
+
+    body {
+        background-color: var(--bg-body);
+        color: var(--text-color);
+        transition: 0.5s ease;
+    }
+
+    /* --- BREAKOUT TECHNIQUE (Sortir du container pour le Full Width) --- */
+    .full-width-section {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+    }
+
+    /* --- SLIDER 3D HAUTE QUALITÉ --- */
+    .banner-3d {
+        height: 85vh;
+        background: var(--slider-bg);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 2px solid var(--accent-color);
+    }
+
+    .slider {
+        position: absolute;
+        width: 400px; /* Plus large pour plus d'impact */
+        height: 250px;
+        transform-style: preserve-3d;
+        animation: autoRun 15s linear infinite;
+        z-index: 2;
+    }
+
+    @keyframes autoRun {
+        from { transform: perspective(1500px) rotateY(0deg); }
+        to { transform: perspective(1500px) rotateY(360deg); }
+    }
+
+    .slider .item {
+        position: absolute;
+        inset: 0;
+        transform: rotateY(calc((var(--position) - 1) * (360 / var(--quantity)) * 1deg)) translateZ(550px);
+    }
+
+    .slider .item img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+        transition: 0.3s;
+    }
+
+    .slider .item:hover img {
+        filter: drop-shadow(0 0 25px var(--accent-color));
+        transform: scale(1.1);
+    }
+
+    /* Titre Flottant en Arrière-plan */
+    .vip-title-bg {
+        position: absolute;
+        font-family: 'Syncopate', sans-serif;
+        font-size: 12vw;
+        font-weight: 900;
+        color: rgba(212, 175, 55, 0.05);
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 1;
+        text-transform: uppercase;
+    }
+
+    /* --- CARTES DU GARAGE --- */
+    .vip-card {
+        background: var(--card-bg);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: 0.4s;
+    }
+
+    body.dark-mode .vip-card {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .vip-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .img-container img {
+        height: 220px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    /* --- BOUTON THEME (Plus Discret) --- */
+    .theme-toggle {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+        background: var(--accent-color);
+        color: #000;
+        border: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+
+    .theme-toggle:hover { transform: rotate(15deg) scale(1.1); }
+
+</style>
+
+<div class="container mt-3">
+    <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-4">
+        <i class="bi bi-arrow-left"></i> Retour au Catalogue
+    </a>
+</div>
+
+<div class="full-width-section mt-3">
+    <div class="banner-3d">
+        <div class="vip-title-bg">EXCLUSIF</div>
+
+        <div class="slider" style="--quantity: {{ cars|length }}">
+            {% for car in cars %}
+                <div class="item" style="--position: {{ forloop.counter }}">
+                    {% if car.image %}
+                        <img src="{{ car.image.url }}" alt="{{ car.model }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold" style="letter-spacing: 3px; color: var(--accent-color);">L'ÉLITE AUTOMOBILE</h2>
+        <p class="text-muted">Des modèles d'exception pour des clients exigeants.</p>
+    </div>
+
+    <div class="row">
+        {% for car in cars %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="vip-card h-100">
+                <div class="img-container">
+                    <img src="{{ car.image.url }}" alt="{{ car.brand }}">
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="fw-bold mb-1">{{ car.brand }} {{ car.model }}</h5>
+                    <p class="text-warning mb-3 fw-bold">{{ car.price|intcomma }} FCFA</p>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <span class="badge bg-dark">{{ car.year }}</span>
+                        <span class="badge bg-dark">{{ car.city }}</span>
+                    </div>
+                    <a href="{% url 'car_detail' car.id %}" class="btn btn-dark w-100 rounded-pill">Détails Privés</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+    <i class="bi bi-moon-stars-fill"></i>
+</button>
+
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        body.classList.toggle('dark-mode');
+
+        if (body.classList.contains('dark-mode')) {
+            btn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            btn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    window.onload = function() {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeBtn').innerHTML = '<i class="bi bi-sun-fill"></i>';
+        }
+    }
+</script>
+{% endblock %}

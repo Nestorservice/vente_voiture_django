@@ -1,0 +1,137 @@
+{% extends "inventory/admin/base_admin.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #eee;
+        padding: 30px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-card label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+    }
+
+    .form-card .form-control,
+    .form-card .form-select {
+        border-radius: 12px;
+        border: 1.5px solid #e9ecef;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+
+    .form-card .form-control:focus,
+    .form-card .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    }
+
+    .preview-img {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_cars' %}" class="btn btn-outline-secondary rounded-pill px-4 btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+<div class="form-card">
+    <h5 class="fw-bold mb-4">
+        <i class="bi bi-{% if car %}pencil-square{% else %}plus-circle{% endif %} me-2"
+            style="color:var(--primary);"></i>{{ title }}
+    </h5>
+
+    {% if car and car.image %}
+    <div class="mb-4 text-center">
+        <img src="{{ car.image.url }}" alt="" class="preview-img">
+        <p class="text-muted small mt-2">Photo actuelle</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Marque</label>
+                {{ form.brand }}
+            </div>
+            <div class="col-md-6">
+                <label>Modèle</label>
+                {{ form.model }}
+            </div>
+            <div class="col-md-4">
+                <label>Prix (FCFA)</label>
+                {{ form.price }}
+            </div>
+            <div class="col-md-4">
+                <label>Année</label>
+                {{ form.year }}
+            </div>
+            <div class="col-md-4">
+                <label>Kilométrage</label>
+                {{ form.kilometrage }}
+            </div>
+            <div class="col-md-4">
+                <label>Carburant</label>
+                {{ form.fuel }}
+            </div>
+            <div class="col-md-4">
+                <label>Transmission</label>
+                {{ form.transmission }}
+            </div>
+            <div class="col-md-4">
+                <label>Ville</label>
+                {{ form.city }}
+            </div>
+            <div class="col-md-6">
+                <label>Statut</label>
+                {{ form.status }}
+            </div>
+            <div class="col-md-6">
+                <label>Photo</label>
+                {{ form.image }}
+            </div>
+            <div class="col-12">
+                <label>Description</label>
+                {{ form.description }}
+            </div>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger mt-3" style="border-radius:12px; font-size:0.85rem;">
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <div><strong>{{ field }}:</strong> {{ error }}</div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-primary rounded-pill px-5">
+                <i class="bi bi-check-lg me-1"></i> {% if car %}Enregistrer{% else %}Ajouter{% endif %}
+            </button>
+            <a href="{% url 'admin_cars' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
