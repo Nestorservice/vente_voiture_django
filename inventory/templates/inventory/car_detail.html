@@ -33,8 +33,7 @@
                         style="object-fit:cover;" loading="lazy">
                     <div class="position-absolute bottom-0 start-0 end-0 p-4 text-white"
                         style="background:linear-gradient(transparent,rgba(0,0,0,.85));">
-                        <p class="mb-1 opacity-75 fw-bold text-uppercase small">{{ car.year }} · Réf. #AUT-{{
-                            car.id|stringformat:"04d" }}</p>
+                        <p class="mb-1 opacity-75 fw-bold text-uppercase small">{{ car.year }} · Réf. #AUT-{{ car.id|stringformat:"04d" }}</p>
                         <h1 class="display-6 fw-bold mb-0">{{ car.brand }} {{ car.model }}</h1>
                     </div>
                 </div>
@@ -118,8 +117,7 @@
                 <h5 class="fw-bold mb-3"><i class="bi bi-text-paragraph text-primary me-2"></i>Informations détaillées
                 </h5>
                 <p class="text-muted" style="line-height:1.8;">
-                    {{ car.description|default:"Le vendeur n'a pas fourni de description détaillée pour ce véhicule.
-                    N'hésitez pas à le contacter pour plus d'informations."|linebreaks }}
+                    {{ car.description|default:"Le vendeur n'a pas fourni de description détaillée pour ce véhicule. N'hésitez pas à le contacter pour plus d'informations."|linebreaks }}
                 </p>
             </div>
 

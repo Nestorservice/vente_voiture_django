@@ -5,76 +5,329 @@
 
 {% block extra_css %}
 <style>
-    .conv-card {
+    /* Stats bar */
+    .msg-stats {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .msg-stat-card {
+        flex: 1;
+        min-width: 140px;
         background: #fff;
-        border-radius: 14px;
-        border: 1px solid #eee;
-        padding: 16px 20px;
+        border-radius: 16px;
+        border: 1px solid #f1f5f9;
+        padding: 18px 20px;
         display: flex;
         align-items: center;
         gap: 14px;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.2s;
-        margin-bottom: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
     }
 
-    .conv-card:hover {
-        transform: translateX(4px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-        border-color: var(--primary);
-    }
-
-    .conv-avatar {
-        width: 48px;
-        height: 48px;
+    .msg-stat-icon {
+        width: 44px;
+        height: 44px;
         border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #fff;
+        font-size: 1.15rem;
+        flex-shrink: 0;
     }
 
-    .conv-unread {
-        border-left: 3px solid #dc3545;
+    .msg-stat-val {
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: var(--text-dark, #0f172a);
+        line-height: 1;
+    }
+
+    .msg-stat-label {
+        font-size: 0.72rem;
+        color: var(--text-muted, #94a3b8);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Search */
+    .msg-search-wrap {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .msg-search-wrap input {
+        background: #fff;
+        border: 2px solid #f1f5f9;
+        border-radius: 14px;
+        padding: 12px 16px 12px 44px;
+        width: 100%;
+        font-size: 0.88rem;
+        transition: all 0.3s;
+        color: var(--text-main, #334155);
+    }
+
+    .msg-search-wrap input:focus {
+        outline: none;
+        border-color: var(--primary, #6366f1);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .msg-search-wrap>i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    /* Conversation cards */
+    .conv-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #f1f5f9;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .conv-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        border-color: var(--primary, #6366f1);
+    }
+
+    .conv-card.has-unread {
+        background: linear-gradient(90deg, #fef2f2, #fff);
+    }
+
+    .conv-card.has-unread::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, #ef4444, #f87171);
+        border-radius: 0 2px 2px 0;
+    }
+
+    .conv-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .conv-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text-dark, #0f172a);
+    }
+
+    .conv-preview {
+        font-size: 0.8rem;
+        color: var(--text-muted, #64748b);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 350px;
+    }
+
+    .conv-car-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.68rem;
+        padding: 2px 8px;
+        background: #eff6ff;
+        color: #3b82f6;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .conv-time {
+        font-size: 0.7rem;
+        color: var(--text-muted, #94a3b8);
+        white-space: nowrap;
+    }
+
+    .conv-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .conv-badge {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+    }
+
+    .conv-total {
+        font-size: 0.7rem;
+        color: var(--text-muted, #94a3b8);
+    }
+
+    /* Empty */
+    .msg-empty {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .msg-empty-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #f0f5ff, #e8f0fe);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+        font-size: 2rem;
+        color: var(--primary, #6366f1);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .msg-stats {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .conv-card {
+            padding: 14px 16px;
+            gap: 12px;
+        }
+
+        .conv-avatar {
+            width: 44px;
+            height: 44px;
+            font-size: 1rem;
+        }
+
+        .conv-preview {
+            max-width: 150px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h5 class="fw-bold mb-1">Messagerie</h5>
-    <p class="text-muted small mb-0">Conversations avec vos clients</p>
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h5 class="fw-bold mb-1">Messagerie</h5>
+        <p class="text-muted small mb-0">Conversations avec vos clients</p>
+    </div>
 </div>
 
-{% for conv in conversations %}
-<a href="{% url 'admin_conversation' conv.client.id %}" class="conv-card {% if conv.unread %}conv-unread{% endif %}">
-    <div class="conv-avatar" style="background:hsl({{ conv.client.id|add:100 }}, 60%, 45%);">
-        {{ conv.client.username|first|upper }}
-    </div>
-    <div class="flex-fill">
-        <div class="d-flex justify-content-between align-items-center">
-            <span style="font-weight:600; font-size:0.95rem;">{{ conv.client.username }}</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">{{ conv.last_message.created_at|timesince }}</span>
+<!-- Stats -->
+<div class="msg-stats">
+    <div class="msg-stat-card">
+        <div class="msg-stat-icon" style="background:#eff6ff; color:#3b82f6;">
+            <i class="bi bi-chat-dots-fill"></i>
         </div>
-        <div style="font-size:0.8rem; color:var(--text-muted);" class="text-truncate" style="max-width:400px;">
-            {% if conv.car %}🚗 {{ conv.car.brand }} · {% endif %}{{ conv.last_message.content|truncatewords:12 }}
+        <div>
+            <div class="msg-stat-val">{{ conversations|length }}</div>
+            <div class="msg-stat-label">Conversations</div>
         </div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-        {% if conv.unread %}
-        <span
-            style="background:#dc3545; color:#fff; font-size:0.7rem; font-weight:700; padding:3px 10px; border-radius:10px;">{{ conv.unread }}</span>
-        {% endif %}
-        <span style="font-size:0.72rem; color:var(--text-muted);">{{ conv.total }} msg</span>
+    <div class="msg-stat-card">
+        <div class="msg-stat-icon" style="background:#fef2f2; color:#ef4444;">
+            <i class="bi bi-envelope-exclamation-fill"></i>
+        </div>
+        <div>
+            {% with total_unread=0 %}
+            <div class="msg-stat-val" id="totalUnread">0</div>
+            {% endwith %}
+            <div class="msg-stat-label">Non lus</div>
+        </div>
     </div>
-</a>
-{% empty %}
-<div class="text-center py-5">
-    <i class="bi bi-chat-dots" style="font-size:3rem; color:#ddd;"></i>
-    <p class="text-muted mt-3">Aucune conversation</p>
 </div>
-{% endfor %}
+
+<!-- Search -->
+<div class="msg-search-wrap">
+    <i class="bi bi-search"></i>
+    <input type="text" id="searchMsg" placeholder="Rechercher un client..." oninput="filterCards(this.value)">
+</div>
+
+<!-- Conversations -->
+<div id="convList">
+    {% for conv in conversations %}
+    <a href="{% url 'admin_conversation' conv.client.id %}" class="conv-card {% if conv.unread %}has-unread{% endif %}"
+        data-name="{{ conv.client.username|lower }}" data-unread="{{ conv.unread }}">
+        <div class="conv-avatar"
+            style="background: linear-gradient(135deg, hsl({{ conv.client.id|add:100 }}, 65%, 50%), hsl({{ conv.client.id|add:140 }}, 55%, 40%));">
+            {{ conv.client.username|first|upper }}
+        </div>
+        <div class="flex-fill" style="min-width:0;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="conv-name">{{ conv.client.username }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                {% if conv.car %}
+                <span class="conv-car-tag"><i class="bi bi-car-front-fill"></i> {{ conv.car.brand }}</span>
+                {% endif %}
+                <span class="conv-preview">{{ conv.last_message.content|truncatewords:12 }}</span>
+            </div>
+        </div>
+        <div class="conv-meta">
+            <span class="conv-time">{{ conv.last_message.created_at|timesince }}</span>
+            {% if conv.unread %}
+            <span class="conv-badge">{{ conv.unread }}</span>
+            {% endif %}
+            <span class="conv-total">{{ conv.total }} msg</span>
+        </div>
+    </a>
+    {% empty %}
+    <div class="msg-empty">
+        <div class="msg-empty-icon">
+            <i class="bi bi-chat-text"></i>
+        </div>
+        <h5 class="fw-bold" style="color: var(--text-dark, #0f172a);">Aucune conversation</h5>
+        <p class="text-muted small">Les messages de vos clients apparaîtront ici</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Count total unread
+    (function () {
+        let total = 0;
+        document.querySelectorAll('.conv-card[data-unread]').forEach(el => {
+            total += parseInt(el.dataset.unread) || 0;
+        });
+        document.getElementById('totalUnread').textContent = total;
+    })();
+
+    function filterCards(q) {
+        q = q.toLowerCase();
+        document.querySelectorAll('.conv-card').forEach(el => {
+            el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+        });
+    }
+</script>
 {% endblock %}

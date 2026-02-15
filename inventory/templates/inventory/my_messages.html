@@ -3,26 +3,121 @@
 {% block extra_css %}
 <style>
     .msg-page {
-        min-height: 60vh;
-        padding: 20px 0;
+        min-height: 70vh;
+        padding: 30px 0;
     }
 
-    .conv-list-card {
-        background: #fff;
+    /* Header */
+    .msg-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 20px;
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .msg-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .msg-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -40%;
+        left: -10%;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .msg-hero h3 {
+        color: #fff;
+        font-weight: 800;
+        position: relative;
+        z-index: 1;
+    }
+
+    .msg-hero p {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.88rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .msg-hero-icon {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #6366f1, #3b82f6);
         border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Search */
+    .msg-search {
+        position: relative;
+    }
+
+    .msg-search input {
+        background: #fff;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 16px 12px 44px;
+        width: 100%;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        color: #1e293b;
+    }
+
+    .msg-search input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .msg-search i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
+    }
+
+    /* Conversation list */
+    .conv-list {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        border: 1px solid #f1f5f9;
         overflow: hidden;
     }
 
     .conv-item {
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 16px 20px;
+        gap: 16px;
+        padding: 18px 22px;
         text-decoration: none;
-        color: #333;
-        border-bottom: 1px solid #f0f0f0;
-        transition: background 0.2s;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.25s ease;
+        position: relative;
     }
 
     .conv-item:last-child {
@@ -30,66 +125,213 @@
     }
 
     .conv-item:hover {
-        background: #f8f9fa;
+        background: linear-gradient(90deg, #f8fafc, #fff);
+        transform: translateX(4px);
     }
 
-    .conv-avatar-sm {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
+    .conv-item.has-unread {
+        background: linear-gradient(90deg, #fef2f2, #fff);
+    }
+
+    .conv-item.has-unread::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, #ef4444, #f87171);
+        border-radius: 0 2px 2px 0;
+    }
+
+    /* Avatar */
+    .conv-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #fff;
-        font-weight: 700;
+        font-weight: 800;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .unread-dot {
-        width: 10px;
-        height: 10px;
-        background: #dc3545;
+    .conv-avatar .online-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 14px;
+        height: 14px;
+        background: #22c55e;
+        border: 3px solid #fff;
         border-radius: 50%;
+    }
+
+    /* Details */
+    .conv-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #0f172a;
+    }
+
+    .conv-preview {
+        font-size: 0.82rem;
+        color: #64748b;
+        max-width: 320px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .conv-car-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        background: #eff6ff;
+        color: #3b82f6;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .conv-time {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        white-space: nowrap;
+    }
+
+    .conv-badge {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 10px;
+        min-width: 22px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Empty state */
+    .msg-empty {
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .msg-empty-icon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, #f0f5ff, #e8f0fe);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2.2rem;
+        color: #6366f1;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .msg-hero {
+            padding: 24px 20px;
+            border-radius: 16px;
+        }
+
+        .conv-item {
+            padding: 14px 16px;
+            gap: 12px;
+        }
+
+        .conv-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            font-size: 1rem;
+        }
+
+        .conv-preview {
+            max-width: 160px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="msg-page">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">
-            <i class="bi bi-chat-dots-fill" style="color:#007aff;"></i> Mes Messages
-        </h3>
+
+    <!-- Hero Header -->
+    <div class="msg-hero">
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="msg-hero-icon">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+            <div>
+                <h3 class="mb-0">Messagerie</h3>
+                <p class="mb-0 mt-1">Vos conversations avec les vendeurs</p>
+            </div>
+        </div>
     </div>
 
-    <div class="conv-list-card">
+    <!-- Search bar -->
+    <div class="msg-search mb-4">
+        <i class="bi bi-search"></i>
+        <input type="text" id="searchConv" placeholder="Rechercher une conversation..."
+            oninput="filterConvs(this.value)">
+    </div>
+
+    <!-- Conversation list -->
+    <div class="conv-list">
         {% for conv in conversations %}
-        <a href="{% url 'conversation_detail' conv.partner.id %}" class="conv-item">
-            <div class="conv-avatar-sm" style="background:hsl({{ conv.partner.id|add:100 }}, 60%, 45%);">
+        <a href="{% url 'conversation_detail' conv.partner.id %}"
+            class="conv-item {% if conv.unread %}has-unread{% endif %}" data-name="{{ conv.partner.username|lower }}">
+            <div class="conv-avatar"
+                style="background: linear-gradient(135deg, hsl({{ conv.partner.id|add:100 }}, 65%, 50%), hsl({{ conv.partner.id|add:140 }}, 55%, 40%));">
                 {{ conv.partner.username|first|upper }}
             </div>
-            <div class="flex-fill">
-                <div class="d-flex justify-content-between">
-                    <span class="fw-bold">{{ conv.partner.username }}</span>
-                    <span class="text-muted small">{{ conv.last_message.created_at|timesince }}</span>
+            <div class="flex-fill" style="min-width:0;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="conv-name">{{ conv.partner.username }}</span>
+                    <span class="conv-time">{{ conv.last_message.created_at|timesince }}</span>
                 </div>
-                <div class="text-muted small text-truncate" style="max-width:300px;">
-                    {% if conv.car %}🚗 {{ conv.car.brand }} · {% endif %}{{ conv.last_message.content|truncatewords:10
-                    }}
+                <div class="d-flex align-items-center gap-2">
+                    {% if conv.car %}
+                    <span class="conv-car-tag"><i class="bi bi-car-front-fill"></i> {{ conv.car.brand }}</span>
+                    {% endif %}
+                    <span class="conv-preview">{{ conv.last_message.content|truncatewords:10 }}</span>
                 </div>
             </div>
             {% if conv.unread %}
-            <div class="unread-dot"></div>
+            <span class="conv-badge">{{ conv.unread }}</span>
             {% endif %}
         </a>
         {% empty %}
-        <div class="text-center py-5">
-            <i class="bi bi-chat-dots" style="font-size:3rem; color:#ddd;"></i>
-            <p class="text-muted mt-3">Aucune conversation pour le moment</p>
-            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-car-front me-1"></i> Parcourir les véhicules
+        <div class="msg-empty">
+            <div class="msg-empty-icon">
+                <i class="bi bi-chat-text"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Aucune conversation</h5>
+            <p class="text-muted small mb-4" style="max-width:360px;margin:0 auto;">Vous n'avez pas encore échangé de
+                messages. Parcourez nos véhicules et contactez un vendeur !</p>
+            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                <i class="bi bi-car-front me-2"></i>Voir les véhicules
             </a>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<script>
+    function filterConvs(q) {
+        q = q.toLowerCase();
+        document.querySelectorAll('.conv-item').forEach(el => {
+            el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+        });
+    }
+</script>
 {% endblock %}
